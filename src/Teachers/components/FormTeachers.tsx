@@ -8,8 +8,8 @@ import {
 } from "@mui/material"
 import { useForm } from "react-hook-form"
 import { Teacher } from "../../interfaces/teachers.interface"
-import { useState } from "react"
-import { yupResolver } from '@hookform/resolvers/yup'
+import { useEffect } from "react"
+import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
 
 import { theme } from "../../theme"
@@ -17,6 +17,8 @@ import { theme } from "../../theme"
 interface TeacherFormProps {
   onSave: (teacher: Teacher) => void
   onCancel: () => void
+  resetForm: boolean
+  initialData?: Teacher
 }
 
 const teacherSchema = yup.object().shape({
@@ -31,11 +33,14 @@ const teacherSchema = yup.object().shape({
 export const FormTeachers: React.FC<TeacherFormProps> = ({
   onSave,
   onCancel,
+  resetForm,
+  initialData,
 }) => {
-    
   const {
     register,
     handleSubmit,
+    reset,
+    setValue,
     formState: { errors },
   } = useForm<Teacher>({
     resolver: yupResolver(teacherSchema),
@@ -44,14 +49,23 @@ export const FormTeachers: React.FC<TeacherFormProps> = ({
   const handleSave = (data: Teacher) => {
     onSave(data)
   }
-  const [nombre, setName] = useState("")
-  const [apellido, setLastName] = useState("")
-  const [email, setEmail] = useState("")
+
+  useEffect(() => {
+    if (resetForm) {
+      reset()
+    }
+  }, [resetForm, reset])
+
+  useEffect(() => {
+    if (initialData) {
+      setValue("nombre", initialData.nombre)
+      setValue("apellido", initialData.apellido)
+      setValue("email", initialData.email)
+    }
+  }, [initialData, setValue])
 
   const handleCancel = () => {
-    setName("")
-    setLastName("")
-    setEmail("")
+    reset()
     onCancel()
   }
   return (
@@ -61,7 +75,7 @@ export const FormTeachers: React.FC<TeacherFormProps> = ({
           <form onSubmit={handleSubmit(handleSave)}>
             <TextField
               label='Nombre'
-            //   value={nombre}
+              //   value={nombre}
               //   onChange={(e) => setName(e.target.value)}
               {...register("nombre", { required: true })}
               error={!!errors.nombre}
@@ -71,7 +85,7 @@ export const FormTeachers: React.FC<TeacherFormProps> = ({
             />
             <TextField
               label='Apellido'
-            //   value={apellido}
+              //   value={apellido}
               //   onChange={(e) => setLastName(e.target.value)}
               {...register("apellido", { required: true })}
               error={!!errors.apellido}
@@ -81,7 +95,7 @@ export const FormTeachers: React.FC<TeacherFormProps> = ({
             />
             <TextField
               label='Correo electrónico'
-            //   value={email}
+              //   value={email}
               //   onChange={(e) => setEmail(e.target.value)}
               {...register("email", {
                 required: true,
@@ -109,7 +123,7 @@ export const FormTeachers: React.FC<TeacherFormProps> = ({
                   Cancelar
                 </Button>
                 <Button type='submit' color='success' variant='contained'>
-                  Guardar
+                  {initialData ? "Actualizar" : "Guardar"}
                 </Button>
               </Box>
             </CardActions>
