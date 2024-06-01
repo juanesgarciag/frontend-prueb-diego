@@ -33,11 +33,20 @@ interface ClassesFormProps {
 const classesSchema = yup.object().shape({
   nombreClase: yup.string().required("El nombre es requerido"),
   descripcionClase: yup.string().required("La descripción es requerida"),
-  profesor: yup.string().required("El profesor es requerido"),
-  estudiantes: yup
-    .array()
-    .of(yup.string())
-    .required("Los estudiantes son requeridos"),
+  profesor: yup.object().shape({
+    id: yup.string().required(),
+    nombre: yup.string().required(),
+    apellido: yup.string().required(),
+    email: yup.string().email().required(),
+  }).required("El profesor es requerido"),
+  estudiantes: yup.array().of(
+    yup.object().shape({
+      id: yup.string().required(),
+      nombre: yup.string().required(),
+      apellido: yup.string().required(),
+      email: yup.string().email().required(),
+    })
+  ).required("Los estudiantes son requeridos"),
 })
 
 async function getTeachers(): Promise<Teacher[]> {
@@ -48,7 +57,7 @@ async function getTeachers(): Promise<Teacher[]> {
 
 async function getStudents(): Promise<Student[]> {
   const response = await axios.get("http://localhost:3000/pruebaDiego/students")
-  console.log('los estudiantes', response.data)
+  console.log("los estudiantes", response.data)
   return response.data
 }
 
@@ -82,7 +91,20 @@ export const FormClasses: React.FC<ClassesFormProps> = ({
   }, [])
 
   const handleSave = (data: Classes) => {
-    onSave(data)
+    const transformedData = {
+      ...data,
+      profesor: {
+        nombre: data.profesor.nombre,
+        apellido: data.profesor.apellido,
+        email: data.profesor.email,
+      },
+      estudiantes: data.estudiantes.map(student => ({
+        nombre: student.nombre,
+        apellido: student.apellido,
+        email: student.email,
+      }))
+    }
+    onSave(transformedData)
   }
 
   useEffect(() => {
@@ -125,50 +147,39 @@ export const FormClasses: React.FC<ClassesFormProps> = ({
               fullWidth
               margin='normal'
             />
-            {/* <TextField
-              select
-              label='Profesor'
-              {...register("profesor", {
-                required: true,
-              })}
-              error={!!errors.profesor}
-              helperText={errors.profesor?.message}
-              fullWidth
-              margin='normal'
-            > 
-                {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.nombre}{" "}{teacher.apellido}
-                </option>
-              ))}
-            </TextField> */}
-            <FormControl fullWidth margin='normal' error={!!errors.profesor}>
+           <FormControl fullWidth margin="normal" error={!!errors.profesor}>
               <InputLabel>Profesor</InputLabel>
-              <Select
-                label='Profesor'
-                {...register("profesor", { required: true })}
-                defaultValue=''
-                onChange={(e) => setValue("profesor", e.target.value)}
-              >
-                {teachers.map((teacher) => (
-                  <MenuItem key={teacher.id} value={teacher.id}>
-                    {teacher.nombre} {teacher.apellido}
-                  </MenuItem>
-                ))}
-              </Select>
+              <Controller
+                name="profesor"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    label="Profesor"
+                    onChange={(e) => field.onChange(e.target.value)}
+                  >
+                    {teachers.map((teacher) => (
+                      <MenuItem key={teacher.id} value={teacher}>
+                        {teacher.nombre} {teacher.apellido}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+              />
               {errors.profesor && <p>{errors.profesor.message}</p>}
             </FormControl>
             <FormControl fullWidth margin="normal" error={!!errors.estudiantes}>
               <Controller
                 name="estudiantes"
                 control={control}
+                defaultValue={initialData ? initialData.estudiantes : []}
                 render={({ field }) => (
                   <Autocomplete
                     multiple
                     options={students}
                     getOptionLabel={(option) => `${option.nombre} ${option.apellido}`}
-                    defaultValue={[]}
-                    onChange={(_, value) => field.onChange(value.map((v) => v.id))}
+                    defaultValue={initialData ? initialData.estudiantes : []}
+                    onChange={(_, value) => field.onChange(value)}
                     renderTags={(value, getTagProps) =>
                       value.map((option, index) => (
                         <Chip
