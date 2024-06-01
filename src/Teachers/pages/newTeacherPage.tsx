@@ -17,7 +17,7 @@ export const NewTeacherPage = () => {
   const [error, setError] = useState(null);
   const [save, setSave] = useState(null)
   const [resetForm, setResetForm] = useState(false)
-  const [initialData, setInitialData] = useState<Teacher | null>(location.state?.teacher || null)
+  const [initialData, setInitialData] = useState<Teacher | undefined>(location.state?.teacher || null)
 
   const handleSave = async(teacher: Teacher) => {
     console.log('el profe a guardar en newTeacher', teacher)
