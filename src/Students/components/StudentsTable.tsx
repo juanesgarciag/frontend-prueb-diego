@@ -30,10 +30,8 @@ const fetchStudents = async () => {
     const response = await axios.get(
       "http://localhost:3000/pruebaDiego/students"
     )
-    console.log("la respuesta de los profes", response.data)
     return response.data
   } catch (error) {
-    console.error("Error getting students:", error)
     const err = error as AxiosError
       Swal.fire({
         icon: "error",
@@ -63,7 +61,6 @@ export const StudentsTable: React.FC = () => {
   }, [])
 
   const handleEdit = (student: Student) => {
-    console.log(`Edit teacher at index ${student}`)
     navigate("/students/new-student", { state: { student } })
   }
 
@@ -78,7 +75,6 @@ export const StudentsTable: React.FC = () => {
       const response = await axios.delete(
         `http://localhost:3000/pruebaDiego/students/${student?.id}`
       )
-      console.log("la respuesta de los students", response.data)
       Swal.fire({
         icon: "success",
         title: "Éxito",

@@ -14,89 +14,91 @@ import {
   Box,
   DialogActions,
   Button,
+  Tooltip,
 } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
 import WarningIcon from "@mui/icons-material/Warning"
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye"
 import axios, { AxiosError } from "axios"
 import { useNavigate } from "react-router-dom"
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2"
 
 import { theme } from "../../theme"
-import { Teacher } from "../../interfaces/teachers.interface"
+import { Classes } from "../../interfaces/classes.interface"
 
-const fetchTeachers = async () => {
+const fetchClasses = async () => {
   try {
     const response = await axios.get(
-      "http://localhost:3000/pruebaDiego/teachers"
+      "http://localhost:3000/pruebaDiego/classes"
     )
     return response.data
   } catch (error) {
     const err = error as AxiosError
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: `Error al cargar los datos ${err.response?.data.message}`,
-        timer: 5000,
-        showConfirmButton: false,
-      })
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: `Error al cargar los datos ${err.response?.data.message}`,
+      timer: 5000,
+      showConfirmButton: false,
+    })
     return []
   }
 }
 
-export const TeachersTable: React.FC = () => {
+export const ClassesTable: React.FC = () => {
   const navigate = useNavigate()
 
-  const [teachers, setTeachers] = useState<Teacher[]>([])
+  const [classes, setClasses] = useState<Classes[]>([])
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [teacherToDelete, setTeacherToDelete] = useState<Teacher | null>()
+  const [classToDelete, setClassToDelete] = useState<Classes | null>()
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchTeachers()
-      setTeachers(data)
+      const data = await fetchClasses()
+      setClasses(data)
     }
 
     fetchData()
   }, [])
 
-  const handleEdit = (teacher: Teacher) => {
-    navigate("/teachers/new-teacher", { state: { teacher } })
+  const handleEdit = (classes: Classes) => {
+    navigate("/classes/new-class", { state: { classes } })
   }
 
-  const handleDelete = (teacher: Teacher) => {
-    setTeacherToDelete(teacher)
+  const handleDelete = (classes: Classes) => {
+    setClassToDelete(classes)
     setShowDeleteDialog(true)
   }
 
-  const handleConfirmDelete = async (teacher: Teacher | null | undefined) => {
-    if (!teacher) return
+  const handleConfirmDelete = async (classes: Classes | null | undefined) => {
+    if (!classes) return
     try {
       const response = await axios.delete(
-        `http://localhost:3000/pruebaDiego/teachers/${teacher?.id}`
+        `http://localhost:3000/pruebaDiego/classes/${classes?.id}`
       )
       Swal.fire({
         icon: "success",
         title: "Éxito",
-        text: `El profesor ${teacher.nombre} ${teacher.apellido} fue eliminado correctamente`,
+        text: `La clase ${classes.nombreClase} fue eliminada correctamente`,
         timer: 2000,
         showConfirmButton: false,
       })
       setShowDeleteDialog(false)
-      setTeacherToDelete(null)
+      setClassToDelete(null)
       // Actualizar la lista de profesores
-      setTeachers((prevTeachers) =>
-        prevTeachers.filter((t) => t.id !== teacher.id)
+      setClasses((prevClasses) =>
+        prevClasses.filter((t) => t.id !== classes.id)
       )
       return response.data
     } catch (error) {
-      console.error("Error fetching teachers:", error)
+      console.error("Error deleting class:", error)
       handleCancelDelete()
       const err = error as AxiosError
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: `No se pudo eliminar el profesor ${err.response?.data.message}`,
+        text: `No se pudo eliminar la clase, ${err.response?.data.message}`,
         timer: 5000,
         showConfirmButton: false,
       })
@@ -106,39 +108,55 @@ export const TeachersTable: React.FC = () => {
 
   const handleCancelDelete = () => {
     setShowDeleteDialog(false)
-    setTeacherToDelete(null)
+    setClassToDelete(null)
   }
   return (
     <>
       <TableContainer component={Paper}>
-        <Table aria-label='teachers table'>
+        <Table aria-label='classes table'>
           <TableHead>
             <TableRow sx={{ backgroundColor: "lightgray" }}>
-              <TableCell>Nombre</TableCell>
-              <TableCell>Apellido</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell>Nombre Clase</TableCell>
+              <TableCell>Descripción</TableCell>
+              <TableCell>Profesor</TableCell>
+              <TableCell>Estudiantes</TableCell>
               <TableCell>Opciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {teachers.map((teacher, index) => (
+            {classes.map((theClass, index) => (
               <TableRow key={index}>
-                <TableCell>{teacher.nombre}</TableCell>
-                <TableCell>{teacher.apellido}</TableCell>
-                <TableCell>{teacher.email}</TableCell>
+                <TableCell>{theClass.nombreClase}</TableCell>
+                <TableCell>{theClass.descripcionClase}</TableCell>
                 <TableCell>
-                  <IconButton
-                    color='primary'
-                    onClick={() => handleEdit(teacher)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color='error'
-                    onClick={() => handleDelete(teacher)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                  {theClass.profesor.nombre} {theClass.profesor.apellido}
+                </TableCell>
+                <TableCell>{theClass.estudiantes.length}</TableCell>
+                <TableCell>
+                  <Tooltip title='Ver estudiantes' placement='top'>
+                    <IconButton
+                      color='success'
+                      // onClick={() => handleEdit(theClass)}
+                    >
+                      <RemoveRedEyeIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Editar clase' placement='top'>
+                    <IconButton
+                      color='primary'
+                      onClick={() => handleEdit(theClass)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Eliminar clase' placement='top'>
+                    <IconButton
+                      color='error'
+                      onClick={() => handleDelete(theClass)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}
@@ -161,8 +179,8 @@ export const TeachersTable: React.FC = () => {
             Confirmar eliminación
           </DialogTitle>
           <DialogContent sx={{ margin: 2, textSize: "22px" }}>
-            ¿Estás seguro de que deseas eliminar al profesor{" "}
-            {teacherToDelete?.nombre} {teacherToDelete?.apellido}?
+            ¿Estás seguro de que deseas eliminar al estudiante{" "}
+            {classToDelete?.nombreClase}
           </DialogContent>
           <DialogActions
             sx={{
@@ -180,7 +198,7 @@ export const TeachersTable: React.FC = () => {
             </Button>
             <Button
               variant='contained'
-              onClick={() => handleConfirmDelete(teacherToDelete)}
+              onClick={() => handleConfirmDelete(classToDelete)}
               color='error'
             >
               Eliminar

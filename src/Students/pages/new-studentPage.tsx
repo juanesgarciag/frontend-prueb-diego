@@ -20,12 +20,9 @@ export const NewStudentPage = () => {
   const [initialData, setInitialData] = useState<Student | undefined>(location.state?.student || null)
 
   const handleSave = async(student: Student) => {
-    console.log('el estudiante a guardar en newStudent', student)
-    console.log('tiene data?', initialData)
       try {
         const axiosUrl = initialData ? await axios.patch(`http://localhost:3000/pruebaDiego/students/${initialData.id}`, student) : await axios.post('http://localhost:3000/pruebaDiego/students', student)
         const response = axiosUrl
-        console.log('la respuesta de los estudiantes', response)
         if(response.status === 201 || response.status === 200) {
           setSave(true)
           setResetForm(true)
@@ -40,7 +37,6 @@ export const NewStudentPage = () => {
   };
 
   const handleCancel = (event: React.FormEvent) => {
-    console.log('el evento al cancelar', event)
     setInitialData(null) // Limpiar initialData al cancelar
     setResetForm(true)
   };
