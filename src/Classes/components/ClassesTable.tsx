@@ -179,8 +179,8 @@ export const ClassesTable: React.FC = () => {
             Confirmar eliminación
           </DialogTitle>
           <DialogContent sx={{ margin: 2, textSize: "22px" }}>
-            ¿Estás seguro de que deseas eliminar al estudiante{" "}
-            {classToDelete?.nombreClase}
+            ¿Estás seguro de que deseas eliminar la clase{" "}
+            {classToDelete?.nombreClase}?
           </DialogContent>
           <DialogActions
             sx={{

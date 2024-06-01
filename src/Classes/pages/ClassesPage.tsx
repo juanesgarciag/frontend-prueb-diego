@@ -15,7 +15,7 @@ export const ClassesPage = () => {
         <Divider />
         <Grid container direction={"row"} justifyContent={"space-between"} alignItems={"center"} paddingTop={2}>
           <Button variant="contained" sx={{ bgcolor: theme.palette.primary.dark, color: 'white' }} onClick={() => navigate('/home')}><ArrowBackIosIcon/>Atrás</Button>
-          <Button variant="contained" color="success" onClick={() => navigate('/students/new-student')}><AddIcon/>Nueva Clase</Button>
+          <Button variant="contained" color="success" onClick={() => navigate('/classes/new-class')}><AddIcon/>Nueva Clase</Button>
         </Grid>
         <Grid container padding={3}>
           <ClassesTable/>
